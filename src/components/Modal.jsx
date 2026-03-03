@@ -8,10 +8,10 @@ const S = `
 .mx{position:absolute;top:16px;right:16px;background:#F2EDE4;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;}
 .fg{margin-bottom:13px;}
 .fg label{display:block;font-size:11px;font-weight:600;color:#8888AA;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:4px;}
-.fg input{width:100%;padding:10px 12px;border:1.5px solid #E8E2D8;border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:#1C1C2E;background:#fff;outline:none;box-sizing:border-box;}
+.fg input{width:100%;padding:10px 12px;border:1.5px solid #E8E2D8;border-radius:8px;font-size:13px;font-family:DM Sans,sans-serif;color:#1C1C2E;background:#fff;outline:none;box-sizing:border-box;}
 .fg input:focus{border-color:#C9973A;}
 .r2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.sub-btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:6px;}
+.sub-btn{width:100%;padding:12px;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:DM Sans,sans-serif;margin-top:6px;}
 .sub-btn.dark{background:#1C1C2E;color:#fff;}
 .sub-btn.gold{background:#C9973A;color:#1C1C2E;}
 .sub-btn:disabled{opacity:0.5;cursor:not-allowed;}
@@ -19,7 +19,7 @@ const S = `
 .alert-err{background:#FEE;color:#C0392B;border:1px solid #FCC;}
 .alert-ok{background:#E8F5E9;color:#1A6B3C;border:1px solid #C8E6C9;}
 .otp-boxes{display:flex;gap:8px;justify-content:center;margin:16px 0;}
-.otp-box{width:44px;height:52px;border:1.5px solid #E8E2D8;border-radius:10px;font-size:20px;font-weight:700;text-align:center;font-family:'DM Sans',sans-serif;outline:none;color:#1C1C2E;}
+.otp-box{width:44px;height:52px;border:1.5px solid #E8E2D8;border-radius:10px;font-size:20px;font-weight:700;text-align:center;font-family:DM Sans,sans-serif;outline:none;color:#1C1C2E;}
 .otp-box:focus{border-color:#C9973A;}
 .biz-upload{border:2px dashed #E8E2D8;border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;background:#FAF8F4;}
 .biz-upload:hover{border-color:#C9973A;}
@@ -105,8 +105,7 @@ const S = `
       onSuccess(res.retailer)
     } catch(e) { setErr(e.message) }
     setLoading(false)
-  }
-  if (type === 'login') return (
+  }if (type === 'login') return (
     <div className="overlay" onClick={e => e.target.classList.contains('overlay') && onClose()}>
       <style>{S}</style>
       <div className="modal">
@@ -179,10 +178,10 @@ const S = `
             <input placeholder="For GST invoicing" value={form.gst} onChange={e => setF('gst',e.target.value)} />
           </div>
           <div className="fg">
-            <label>Business Card / Shop Photo 📇</label>
+            <label>Business Card / Shop Photo</label>
             <div className="biz-upload" onClick={() => fileRef.current.click()}>
               {bizPreview
-                ? <img src={bizPreview} alt="Business card" className="biz-preview" />
+                ? <img src={bizPreview} alt="biz card" className="biz-preview" />
                 : <>
                     <div style={{fontSize:36,marginBottom:6}}>📇</div>
                     <div style={{fontSize:13,color:'#3D3D5C',fontWeight:600}}>Upload business card or shop photo</div>
@@ -192,7 +191,7 @@ const S = `
             </div>
             <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleBizCard} />
             {bizPreview && (
-              <button style={{fontSize:11,color:'#C0392B',background:'none',border:'none',cursor:'pointer',marginTop:4,fontFamily:"'DM Sans',sans-serif"}}
+              <button style={{fontSize:11,color:'#C0392B',background:'none',border:'none',cursor:'pointer',marginTop:4}}
                 onClick={() => { setBizCard(null); setBizPreview('') }}>Remove photo</button>
             )}
           </div>
