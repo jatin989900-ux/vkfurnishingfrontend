@@ -57,17 +57,16 @@ const S = `
 .qty-num{font-weight:700;font-size:18px;min-width:28px;text-align:center;}
 .cart-added{background:#E8F5E9;border:1px solid #C8E6C9;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;margin-bottom:12px;}
 .add-cart-btn{width:100%;padding:14px;background:#1C1C2E;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;}
+.add-cart-btn:hover{background:#2E2E4A;}
 .view-cart-btn{width:100%;padding:14px;background:#C9973A;color:#1C1C2E;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;}
 .pd-reg-btn{width:100%;padding:14px;background:#1C1C2E;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
 `
 
-const CAT_EMOJI = {'Bedsheets':'🛏️','Dohars':'🌸','Comforters':'❄️','Blankets':'🧣','Towels':'🚿','Quilts':'🌙','Bathrobes':'👘','Bedcovers':'🎨','Top Sheets':'✨','Other':'📦'}
-
-export default function ProductDetail({ product: p, approved, onClose, onRegister }) {
+const CAT_EMOJI = {'Bedsheets':'🛏️','Dohars':'🌸','Comforters':'❄️','Blankets':'🧣','Towels':'🚿','Quilts':'🌙','Bathrobes':'👘','Bedcovers':'🎨','Top Sheets':'✨','Other':'📦'}export default function ProductDetail({ product: p, approved, onClose, onRegister }) {
   const { addToCart } = useCart()
   const images = (p.images && p.images.length > 0) ? p.images : (p.image_url ? [p.image_url] : [])
-  const videoSlide = p.video_file_url ? { type: 'video', url: p.video_file_url } : null
-  const slides = [...images.map(u => ({ type: 'image', url: u })), ...(videoSlide ? [videoSlide] : [])]
+  const videoSlide = p.video_file_url ? { type:'video', url:p.video_file_url } : null
+  const slides = [...images.map(u => ({ type:'image', url:u })), ...(videoSlide ? [videoSlide] : [])]
   const [idx, setIdx] = useState(0)
   const [qty, setQty] = useState(p.moq || 1)
   const [size, setSize] = useState('')
@@ -97,7 +96,7 @@ export default function ProductDetail({ product: p, approved, onClose, onRegiste
       <style>{S}</style>
       <div className="pd-modal">
         <div className="gallery" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-          <div className="gallery-track" style={{ transform: `translateX(-${idx * 100}%)` }}>
+          <div className="gallery-track" style={{ transform:`translateX(-${idx * 100}%)` }}>
             {slides.length > 0 ? slides.map((slide, i) => (
               <div key={i} className="gallery-slide">
                 {slide.type === 'video'
@@ -106,27 +105,27 @@ export default function ProductDetail({ product: p, approved, onClose, onRegiste
               </div>
             )) : (
               <div className="gallery-slide">
-                <div className="gallery-placeholder">{CAT_EMOJI[p.category] || '📦'}</div>
+                <div className="gallery-placeholder">{CAT_EMOJI[p.category]||'📦'}</div>
               </div>
             )}
           </div>
           <button className="gallery-close" onClick={onClose}>✕</button>
           {slides.length > 1 && <>
-            <span className="gallery-count">{idx + 1} / {slides.length}</span>
-            {idx > 0 && <button className="gallery-nav gallery-prev" onClick={() => setIdx(i => i - 1)}>‹</button>}
-            {idx < slides.length - 1 && <button className="gallery-nav gallery-next" onClick={() => setIdx(i => i + 1)}>›</button>}
+            <span className="gallery-count">{idx+1} / {slides.length}</span>
+            {idx > 0 && <button className="gallery-nav gallery-prev" onClick={()=>setIdx(i=>i-1)}>‹</button>}
+            {idx < slides.length-1 && <button className="gallery-nav gallery-next" onClick={()=>setIdx(i=>i+1)}>›</button>}
             <div className="gallery-dots">
-              {slides.map((_, i) => <div key={i} className={`gdot ${i === idx ? 'active' : ''}`} onClick={() => setIdx(i)} />)}
+              {slides.map((_,i) => <div key={i} className={`gdot ${i===idx?'active':''}`} onClick={()=>setIdx(i)} />)}
             </div>
           </>}
-          {p.video_url && <button className="ext-video-btn" onClick={() => window.open(p.video_url, '_blank')}>▶ Watch on YouTube</button>}
+          {p.video_url && <button className="ext-video-btn" onClick={()=>window.open(p.video_url,'_blank')}>▶ Watch on YouTube</button>}
         </div>
 
         {slides.length > 1 && (
           <div className="thumbs">
-            {slides.map((slide, i) => (
-              <div key={i} className={`thumb ${i === idx ? 'active' : ''}`} onClick={() => setIdx(i)}>
-                {slide.type === 'video' ? <span className="thumb-video">🎬</span> : <img src={slide.url} alt="" />}
+            {slides.map((slide,i) => (
+              <div key={i} className={`thumb ${i===idx?'active':''}`} onClick={()=>setIdx(i)}>
+                {slide.type==='video' ? <span className="thumb-video">🎬</span> : <img src={slide.url} alt="" />}
               </div>
             ))}
           </div>
@@ -160,24 +159,24 @@ export default function ProductDetail({ product: p, approved, onClose, onRegiste
                   <div className="pd-field">
                     <label>Quantity</label>
                     <div className="qty-row">
-                      <button className="qty-btn" onClick={() => setQty(q => Math.max(p.moq, q - 1))}>−</button>
+                      <button className="qty-btn" onClick={()=>setQty(q=>Math.max(p.moq,q-1))}>−</button>
                       <span className="qty-num">{qty}</span>
-                      <button className="qty-btn" onClick={() => setQty(q => q + 1)}>+</button>
+                      <button className="qty-btn" onClick={()=>setQty(q=>q+1)}>+</button>
                       <span style={{fontSize:11,color:'#8888AA'}}>min {p.moq} pcs</span>
                     </div>
                   </div>
                   {p.sizes && (
                     <div className="pd-field">
                       <label>Size</label>
-                      <select value={size} onChange={e => setSize(e.target.value)}>
+                      <select value={size} onChange={e=>setSize(e.target.value)}>
                         <option value="">Select size</option>
-                        {p.sizes.split(',').map(s => <option key={s} value={s.trim()}>{s.trim()}</option>)}
+                        {p.sizes.split(',').map(s=><option key={s} value={s.trim()}>{s.trim()}</option>)}
                       </select>
                     </div>
                   )}
                   <div className="pd-field">
                     <label>Color Preference</label>
-                    <input placeholder="e.g. Blue, Red, Assorted" value={color} onChange={e => setColor(e.target.value)} />
+                    <input placeholder="e.g. Blue, Red, Assorted" value={color} onChange={e=>setColor(e.target.value)} />
                   </div>
                 </div>
               )}
@@ -213,5 +212,5 @@ export default function ProductDetail({ product: p, approved, onClose, onRegiste
         </div>
       </div>
     </div>
-)
+  )
 }
