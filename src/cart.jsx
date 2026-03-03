@@ -13,34 +13,27 @@ export function CartProvider({ children }) {
 
   function addToCart(product, qty, size, color) {
     setItems(prev => {
-      const existing = prev.find(i => i.id === product.id && i.size === size && i.color === color)
-      if (existing) {
-        return prev.map(i => i.id === product.id && i.size === size && i.color === color
-          ? { ...i, qty: i.qty + qty } : i)
+      const existing = prev.findIndex(i => i.product.id === product.id && i.size === size && i.color === color)
+      if (existing >= 0) {
+        return prev.map((i, idx) => idx === existing ? { ...i, quantity: i.quantity + qty } : i)
       }
-      return [...prev, {
-        id: product.id, name: product.name, category: product.category,
-        image: product.images?.[0] || product.image_url || '',
-        wholesale_price: product.wholesale_price, mrp: product.mrp,
-        moq: product.moq, qty, size, color
-      }]
+      return [...prev, { product, quantity: qty, size, color }]
     })
   }
 
-  function updateQty(id, size, color, qty) {
-    setItems(prev => prev.map(i =>
-      i.id === id && i.size === size && i.color === color ? { ...i, qty } : i
-    ))
+  function updateQty(index, qty) {
+    if (qty <= 0) { removeItem(index); return }
+    setItems(prev => prev.map((i, idx) => idx === index ? { ...i, quantity: qty } : i))
   }
 
-  function removeItem(id, size, color) {
-    setItems(prev => prev.filter(i => !(i.id === id && i.size === size && i.color === color)))
+  function removeItem(index) {
+    setItems(prev => prev.filter((_, idx) => idx !== index))
   }
 
   function clearCart() { setItems([]) }
 
-  const totalItems = items.reduce((s, i) => s + i.qty, 0)
-  const totalValue = items.reduce((s, i) => s + (i.wholesale_price * i.qty), 0)
+  const totalItems = items.reduce((s, i) => s + i.quantity, 0)
+  const totalValue = items.reduce((s, i) => s + (i.product.wholesale_price * i.quantity), 0)
 
   return (
     <CartContext.Provider value={{ items, addToCart, updateQty, removeItem, clearCart, totalItems, totalValue }}>
@@ -49,4 +42,4 @@ export function CartProvider({ children }) {
   )
 }
 
-export function useCart() { return useContext(CartContext) }
+export function useCart() { return useContext(CartContext) } 
