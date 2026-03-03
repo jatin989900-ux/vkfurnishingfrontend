@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { useCart } from '../cart.js'
+import { useCart } from '../cart.jsx'
 
 const S = `
 .pd-overlay{position:fixed;inset:0;background:rgba(10,10,20,0.92);z-index:300;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn 0.2s ease;}
