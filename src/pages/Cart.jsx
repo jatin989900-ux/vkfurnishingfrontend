@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { useCart } from '../cart.js'
+import { useCart } from '../cart.jsx'
 
 const WHATSAPP_NUMBER = '917532002298'
 
