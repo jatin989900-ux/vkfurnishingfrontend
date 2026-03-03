@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useCart } from '../cart.js'
+import { useCart } from '../cart.jsx'
 
 const S = `
 .nav{background:#1C1C2E;padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:8px;}
