@@ -26,14 +26,15 @@ const S = `
 .nb{border:none;padding:7px 13px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .nb-ghost{background:transparent;color:#888;border:1px solid #ddd;}
 .ret-table{background:#fff;border-radius:14px;border:1px solid #E8E2D8;overflow:hidden;}
-.ret-head{display:grid;grid-template-columns:2fr 1.5fr 1fr auto;gap:10px;padding:11px 16px;background:#1C1C2E;color:#fff;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
-.ret-row{display:grid;grid-template-columns:2fr 1.5fr 1fr auto;gap:10px;padding:13px 16px;border-bottom:1px solid #E8E2D8;align-items:center;}
+.ret-head{display:grid;grid-template-columns:2fr 1.5fr 0.8fr 1fr auto;gap:10px;padding:11px 16px;background:#1C1C2E;color:#fff;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;}
+.ret-row{display:grid;grid-template-columns:2fr 1.5fr 0.8fr 1fr auto;gap:10px;padding:13px 16px;border-bottom:1px solid #E8E2D8;align-items:center;}
 .ret-row:last-child{border-bottom:none;}
 .ret-row:hover{background:#FAF8F4;}
 .act-btns{display:flex;gap:4px;}
 .ab{border:none;padding:5px 9px;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;}
 .ab.approve{background:#1A6B3C;color:#fff;}
 .ab.reject{background:#C0392B;color:#fff;}
+.ab.ban{background:#8B0000;color:#fff;}
 .pm-header{padding:14px 18px;border-bottom:1px solid #E8E2D8;display:flex;align-items:center;justify-content:space-between;background:#fff;border-radius:14px 14px 0 0;border:1px solid #E8E2D8;}
 .pm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;padding:14px;background:#fff;border-radius:0 0 14px 14px;border:1px solid #E8E2D8;border-top:none;}
 .pm-card{background:#FAF8F4;border-radius:10px;padding:12px;border:1px solid #E8E2D8;position:relative;}
@@ -66,10 +67,15 @@ const S = `
 .img-upload-area{border:2px dashed #E8E2D8;border-radius:10px;padding:20px;text-align:center;cursor:pointer;margin-bottom:4px;}
 .img-upload-area:hover{border-color:#C9973A;}
 .img-preview{width:100%;height:120px;object-fit:cover;border-radius:8px;margin-top:8px;}
+.multi-img-grid{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;}
+.multi-img-item{position:relative;width:72px;height:72px;}
+.multi-img-item img{width:100%;height:100%;object-fit:cover;border-radius:8px;border:1px solid #E8E2D8;}
+.multi-img-remove{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:#C0392B;color:#fff;border:none;border-radius:50%;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 .overlay{position:fixed;inset:0;background:rgba(28,28,46,0.7);backdrop-filter:blur(5px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}
 .modal{background:#fff;border-radius:18px;padding:28px;max-width:580px;width:100%;position:relative;max-height:92vh;overflow-y:auto;animation:fadeIn 0.3s ease;}
 .mx{position:sticky;top:-28px;float:right;background:#F2EDE4;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;margin:-4px -4px 8px 0;z-index:10;}
 .empty{text-align:center;padding:40px;color:#8888AA;}
+.biz-card-thumb{width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #E8E2D8;cursor:pointer;}
 @media(max-width:500px){.ret-head,.ret-row{grid-template-columns:1fr 1fr;}.r2,.r3{grid-template-columns:1fr;}}
 `
 
@@ -96,10 +102,12 @@ export default function Admin() {
   const [productModal, setProductModal] = useState(null)
   const [editId, setEditId] = useState(null)
   const [pForm, setPForm] = useState(BLANK)
-  const [imgFile, setImgFile] = useState(null)
-  const [imgPreview, setImgPreview] = useState('')
+  const [imgFiles, setImgFiles] = useState([])
+  const [imgPreviews, setImgPreviews] = useState([])
   const [deleteId, setDeleteId] = useState(null)
   const fileRef = useRef()
+  const videoRef = useRef()
+  const [videoFile, setVideoFile] = useState(null)
 
   useEffect(() => { if (authed) fetchAll() }, [authed])
 
@@ -123,14 +131,24 @@ export default function Admin() {
   async function handleApprove(id) { try { await approveRetailer(id); fetchAll() } catch(e) { setErr(e.message) } }
   async function handleReject(id) { try { await rejectRetailer(id); fetchAll() } catch(e) { setErr(e.message) } }
 
-  function openAdd() { setEditId(null); setPForm(BLANK); setImgFile(null); setImgPreview(''); setErr(''); setOk(''); setProductModal(true) }
+  function openAdd() { setEditId(null); setPForm(BLANK); setImgFiles([]); setImgPreviews([]); setVideoFile(null); setErr(''); setOk(''); setProductModal(true) }
   function openEdit(p) {
     setEditId(p.id)
     setPForm({ name:p.name, category:p.category, gsm:p.gsm||'', sizes:p.sizes||'', colors:String(p.colors||''), moq:String(p.moq||''), wholesale_price:String(p.wholesale_price||''), mrp:String(p.mrp||''), tag:p.tag||'', in_stock:p.in_stock, video_url:p.video_url||'' })
-    setImgFile(null); setImgPreview(p.image_url||''); setErr(''); setOk(''); setProductModal(true)
+    setImgFiles([]); setImgPreviews(p.images||[]); setVideoFile(null); setErr(''); setOk(''); setProductModal(true)
   }
 
-  function handleImg(e) { const f=e.target.files[0]; if(!f) return; setImgFile(f); setImgPreview(URL.createObjectURL(f)) }
+  function handleImgs(e) {
+    const files = Array.from(e.target.files)
+    setImgFiles(prev => [...prev, ...files])
+    const previews = files.map(f => URL.createObjectURL(f))
+    setImgPreviews(prev => [...prev, ...previews])
+  }
+
+  function removePreview(i) {
+    setImgPreviews(prev => prev.filter((_,idx) => idx !== i))
+    setImgFiles(prev => prev.filter((_,idx) => idx !== i))
+  }
 
   async function saveProduct() {
     if (!pForm.name) { setErr('Product name required'); return }
@@ -140,7 +158,10 @@ export default function Admin() {
     try {
       const fd = new FormData()
       Object.entries(pForm).forEach(([k,v]) => fd.append(k,v))
-      if (imgFile) fd.append('image', imgFile)
+      imgFiles.forEach(f => fd.append('images', f))
+      if (videoFile) fd.append('video', videoFile)
+      const existingUrls = imgPreviews.filter(p => p.startsWith('http'))
+      fd.append('existing_images', JSON.stringify(existingUrls))
       if (editId) { await updateProduct(editId, fd); setOk('Product updated!') }
       else { await addProduct(fd); setOk('Product added!') }
       fetchAll()
@@ -177,7 +198,7 @@ export default function Admin() {
     <><style>{S}</style>
     <div className="admin-page">
       <div className="admin-hd">
-        <div><h2 style={{fontFamily:"'Playfair Display',serif",fontSize:24}}>Admin Panel</h2><p style={{color:'#8888AA',fontSize:12}}>All changes save to database automatically</p></div>
+        <div><h2 style={{fontFamily:"'Playfair Display',serif",fontSize:24}}>Admin Panel</h2><p style={{color:'#8888AA',fontSize:12}}>VK Furnishing · All changes save automatically</p></div>
         <button className="nb nb-ghost" onClick={logout}>Logout</button>
       </div>
       {err && <div className="alert alert-err">{err}</div>}
@@ -192,17 +213,23 @@ export default function Admin() {
           {['pending','approved','rejected'].map(t=><button key={t} className={`tab ${rTab===t?'active':''}`} onClick={()=>setRTab(t)}>{t.charAt(0).toUpperCase()+t.slice(1)} ({retailers.filter(r=>r.status===t).length})</button>)}
         </div>
         <div className="ret-table">
-          <div className="ret-head"><span>Shop / Owner</span><span>City · Phone</span><span>Date</span><span>Action</span></div>
+          <div className="ret-head"><span>Shop / Owner</span><span>City · Phone</span><span>Biz Card</span><span>Date</span><span>Action</span></div>
           {retailers.filter(r=>r.status===rTab).length===0
             ? <div className="empty"><div style={{fontSize:36,marginBottom:10}}>✅</div><p>No {rTab} requests</p></div>
             : retailers.filter(r=>r.status===rTab).map(r=>(
               <div key={r.id} className="ret-row">
                 <div><div style={{fontWeight:700,fontSize:13}}>{r.shop_name}</div><div style={{fontSize:11,color:'#8888AA'}}>{r.name} · {r.gst||'No GST'}</div></div>
                 <div><div style={{fontSize:12}}>{r.city}</div><div style={{fontSize:11,color:'#8888AA'}}>{r.phone}</div></div>
+                <div>
+                  {r.business_card_url
+                    ? <img src={r.business_card_url} alt="Biz card" className="biz-card-thumb" onClick={()=>window.open(r.business_card_url,'_blank')} />
+                    : <span style={{fontSize:11,color:'#B0B0CC'}}>No card</span>}
+                </div>
                 <div style={{fontSize:11,color:'#8888AA'}}>{new Date(r.created_at).toLocaleDateString('en-IN')}</div>
                 <div className="act-btns">
-                  {r.status==='pending'&&<><button className="ab approve" onClick={()=>handleApprove(r.id)}>✓</button><button className="ab reject" onClick={()=>handleReject(r.id)}>✗</button></>}
-                  {r.status!=='pending'&&<span style={{padding:'3px 8px',borderRadius:20,fontSize:10,fontWeight:700,background:r.status==='approved'?'#E8F5E9':'#FEE',color:r.status==='approved'?'#1A6B3C':'#C0392B'}}>{r.status}</span>}
+                  {r.status==='pending'&&<><button className="ab approve" onClick={()=>handleApprove(r.id)}>✓ Approve</button><button className="ab reject" onClick={()=>handleReject(r.id)}>✗ Reject</button></>}
+                  {r.status==='approved'&&<><span style={{padding:'3px 8px',borderRadius:20,fontSize:10,fontWeight:700,background:'#E8F5E9',color:'#1A6B3C'}}>Approved</span><button className="ab ban" onClick={()=>handleReject(r.id)}>Ban</button></>}
+                  {r.status==='rejected'&&<><span style={{padding:'3px 8px',borderRadius:20,fontSize:10,fontWeight:700,background:'#FEE',color:'#C0392B'}}>Rejected</span><button className="ab approve" onClick={()=>handleApprove(r.id)}>Restore</button></>}
                 </div>
               </div>
             ))
@@ -221,13 +248,13 @@ export default function Admin() {
               {products.map(p=>(
                 <div key={p.id} className="pm-card">
                   {p.in_stock?<span className="pm-ins">In Stock</span>:<span className="pm-oos">Out of Stock</span>}
-                  {p.image_url?<img src={p.image_url} alt={p.name} className="pm-img"/>:<span className="pm-emoji">{CAT_EMOJI[p.category]||'📦'}</span>}
+                  {(p.images&&p.images[0])||p.image_url?<img src={(p.images&&p.images[0])||p.image_url} alt={p.name} className="pm-img"/>:<span className="pm-emoji">{CAT_EMOJI[p.category]||'📦'}</span>}
                   <div className="pm-name">{p.name}</div>
                   <div className="pm-cat">{p.category} · {p.gsm}</div>
                   <div className="pm-pr"><span className="pm-ws">₹{p.wholesale_price}</span><span className="pm-mrp">₹{p.mrp}</span></div>
-                  <div style={{fontSize:10,color:'#8888AA',marginBottom:7}}>MOQ:{p.moq} · {p.colors} colors</div>
+                  <div style={{fontSize:10,color:'#8888AA',marginBottom:7}}>MOQ:{p.moq} · {p.colors} colors · {p.images?.length||1} photos</div>
                   <div className="pm-acts">
-                    <button className="pm-btn edit" onClick={()=>openEdit(p)}>✏️</button>
+                    <button className="pm-btn edit" onClick={()=>openEdit(p)}>✏️ Edit</button>
                     <button className="pm-btn tog" onClick={()=>toggleStock(p)}>{p.in_stock?'OOS':'IN'}</button>
                     <button className="pm-btn del" onClick={()=>setDeleteId(p.id)}>🗑️</button>
                   </div>
@@ -280,13 +307,37 @@ export default function Admin() {
           <p style={{fontSize:12,color:'#8888AA',marginBottom:18}}>{editId?'Update product details':'Product saves permanently to your database'}</p>
           {err&&<div className="alert alert-err">{err}</div>}
           {ok&&<div className="alert alert-ok">✓ {ok}</div>}
-          <div className="fg"><label>Product Photo</label>
+
+          <div className="fg"><label>Product Photos (upload multiple)</label>
             <div className="img-upload-area" onClick={()=>fileRef.current.click()}>
-              {imgPreview?<img src={imgPreview} alt="preview" className="img-preview"/>:<div><div style={{fontSize:32,marginBottom:8}}>📷</div><div style={{fontSize:13,color:'#8888AA'}}>Tap to upload photo</div><div style={{fontSize:11,color:'#8888AA',marginTop:4}}>Works from phone camera or laptop</div></div>}
+              <div style={{fontSize:32,marginBottom:8}}>📷</div>
+              <div style={{fontSize:13,color:'#8888AA'}}>Tap to add photos</div>
+              <div style={{fontSize:11,color:'#8888AA',marginTop:4}}>You can select multiple at once</div>
             </div>
-            <input ref={fileRef} type="file" accept="image/*" style={{display:'none'}} onChange={handleImg}/>
-            {imgPreview&&<button style={{fontSize:11,color:'#C0392B',background:'none',border:'none',cursor:'pointer',marginTop:4}} onClick={()=>{setImgFile(null);setImgPreview('')}}>Remove photo</button>}
+            <input ref={fileRef} type="file" accept="image/*" multiple style={{display:'none'}} onChange={handleImgs}/>
+            {imgPreviews.length>0&&(
+              <div className="multi-img-grid">
+                {imgPreviews.map((src,i)=>(
+                  <div key={i} className="multi-img-item">
+                    <img src={src} alt={`preview ${i+1}`}/>
+                    <button className="multi-img-remove" onClick={()=>removePreview(i)}>✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
+          <div className="fg"><label>Product Video (optional)</label>
+            <div className="img-upload-area" onClick={()=>videoRef.current.click()}>
+              {videoFile
+                ? <div style={{fontSize:13,color:'#1A6B3C',fontWeight:700}}>✅ {videoFile.name}</div>
+                : <><div style={{fontSize:32,marginBottom:8}}>🎬</div><div style={{fontSize:13,color:'#8888AA'}}>Tap to upload video file</div></>
+              }
+            </div>
+            <input ref={videoRef} type="file" accept="video/*" style={{display:'none'}} onChange={e=>setVideoFile(e.target.files[0])}/>
+            {videoFile&&<button style={{fontSize:11,color:'#C0392B',background:'none',border:'none',cursor:'pointer',marginTop:4}} onClick={()=>setVideoFile(null)}>Remove video</button>}
+          </div>
+
           <div className="r2">
             <div className="fg"><label>Product Name *</label><input placeholder="e.g. Royal Cotton Bedsheet" value={pf.name} onChange={e=>setPf('name',e.target.value)}/></div>
             <div className="fg"><label>Category *</label><select value={pf.category} onChange={e=>setPf('category',e.target.value)}>{CATS.map(c=><option key={c}>{c}</option>)}</select></div>
@@ -333,4 +384,4 @@ export default function Admin() {
     )}
     </>
   )
-                }
+        }
