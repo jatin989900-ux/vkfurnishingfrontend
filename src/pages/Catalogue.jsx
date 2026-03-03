@@ -1,103 +1,88 @@
-
 import { useState, useEffect } from 'react'
 import { getProducts } from '../api.js'
 import ProductCard from '../components/ProductCard.jsx'
 import ProductDetail from '../components/ProductDetail.jsx'
 import Modal from '../components/Modal.jsx'
 
-const S = `
-.cat-page{max-width:1080px;margin:0 auto;padding:32px 16px;}
-.cat-hd{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px;}
-.search-wrap{position:relative;margin-bottom:16px;}
-.search-wrap input{width:100%;padding:11px 14px 11px 40px;border:1.5px solid #E8E2D8;border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;color:#1C1C2E;background:#fff;outline:none;}
-.search-wrap input:focus{border-color:#C9973A;}
-.si{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:15px;}
-.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:20px;}
-.fb{padding:7px 16px;border-radius:20px;border:1px solid #E8E2D8;background:#fff;color:#3D3D5C;font-size:12px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;}
-.fb.active{background:#1C1C2E;color:#fff;border-color:#1C1C2E;}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
-.login-bar{background:#1C1C2E;color:#ccc;text-align:center;padding:12px 20px;font-size:13px;}
-`
+const S = [
+  '.cat-page{max-width:1080px;margin:0 auto;padding:24px 16px;}',
+  '.cat-hd{margin-bottom:20px;}',
+  '.cat-hd h2{font-size:24px;font-weight:700;margin-bottom:4px;}',
+  '.cat-hd p{font-size:13px;color:#8888AA;}',
+  '.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:20px;scrollbar-width:none;}',
+  '.filters::-webkit-scrollbar{display:none;}',
+  '.filter-btn{padding:7px 14px;border-radius:20px;border:1.5px solid #E8E2D8;background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;color:#3D3D5C;}',
+  '.filter-btn.active{background:#1C1C2E;color:#fff;border-color:#1C1C2E;}',
+  '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}',
+  '.empty{text-align:center;padding:60px 20px;color:#8888AA;}',
+  '.search-box{width:100%;padding:11px 14px;border:1.5px solid #E8E2D8;border-radius:10px;font-size:14px;outline:none;margin-bottom:14px;box-sizing:border-box;}',
+  '.search-box:focus{border-color:#C9973A;}',
+].join('')
+
+const CATS = ['All','Bedsheets','Dohars','Comforters','Blankets','Towels','Quilts','Bathrobes','Bedcovers','Top Sheets','Other']
 
 export default function Catalogue({ retailer, onLogin }) {
   const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [cat, setCat] = useState('All')
   const [search, setSearch] = useState('')
-  const [activeCat, setActiveCat] = useState('All')
-  const [modal, setModal] = useState(null)
   const [selected, setSelected] = useState(null)
+  const [modal, setModal] = useState(null)
 
   useEffect(() => {
-    setLoading(true)
-    getProducts(retailer?.phone)
-      .then(r => { setProducts(r.products || []); setLoading(false) })
-      .catch(() => setLoading(false))
+    getProducts(retailer?.phone).then(r => setProducts(r.products || [])).catch(console.error)
   }, [retailer])
-
-  const allCats = ['All', ...Array.from(new Set(products.map(p => p.category)))]
-  const filtered = products.filter(p =>
-    (activeCat === 'All' || p.category === activeCat) &&
-    (p.name.toLowerCase().includes(search.toLowerCase()) ||
-     p.category.toLowerCase().includes(search.toLowerCase()))
-  )
 
   function handleSuccess(data) {
     if (data === 'login') { setModal('login'); return }
     if (data === 'register') { setModal('register'); return }
-    if (data?.phone) { onLogin(data); setModal(null) }
+    if (data && data.phone) { onLogin(data); setModal(null) }
     else setModal(null)
   }
+
+  const filtered = products.filter(p => {
+    const matchCat = cat === 'All' || p.category === cat
+    const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase())
+    return matchCat && matchSearch
+  })
 
   return (
     <>
       <style>{S}</style>
-      {!retailer && (
-        <div className="login-bar">
-          Already registered? <span style={{color:'#C9973A',cursor:'pointer'}} onClick={() => setModal('login')}>Login to see wholesale prices</span>
-        </div>
-      )}
       <div className="cat-page">
         <div className="cat-hd">
-          <div>
-            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:26,marginBottom:4}}>Product Catalogue</h2>
-            <p style={{fontSize:12,color:'#8888AA'}}>
-              {retailer?.status === 'approved'
-                ? `Welcome, ${retailer.shop_name} · Tap any product to view & order`
-                : 'Tap any product to view · Register to see prices'}
-            </p>
-          </div>
-          {retailer?.status === 'approved' && (
-            <div style={{background:'#1A6B3C',color:'#fff',padding:'5px 12px',borderRadius:20,fontSize:11,fontWeight:700}}>
-              ✓ Verified Retailer
-            </div>
-          )}
+          <h2>Full Catalogue</h2>
+          <p>{products.length} products · Tap any to view details{retailer?.status === 'approved' ? ' and order' : ''}</p>
         </div>
-        <div className="search-wrap">
-          <span className="si">🔍</span>
-          <input placeholder="Search products..." value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
+        <input
+          className="search-box"
+          placeholder="Search products..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
         <div className="filters">
-          {allCats.map(c => (
-            <button key={c} className={`fb ${activeCat===c?'active':''}`} onClick={() => setActiveCat(c)}>{c}</button>
+          {CATS.map(c => (
+            <button key={c} className={'filter-btn' + (cat === c ? ' active' : '')} onClick={() => setCat(c)}>{c}</button>
           ))}
         </div>
-        {loading
-          ? <div className="loading-screen"><div className="spinner"></div><p>Loading catalogue...</p></div>
-          : filtered.length === 0
-            ? <div style={{textAlign:'center',padding:48,color:'#8888AA'}}><div style={{fontSize:40,marginBottom:12}}>📦</div><p>No products found</p></div>
-            : <div className="grid">
-                {filtered.map(p => (
-                  <ProductCard key={p.id} product={p} approved={retailer?.status==='approved'}
-                    onClick={() => setSelected(p)} />
-                ))}
-              </div>
+        {filtered.length === 0
+          ? <div className="empty"><div style={{fontSize:40,marginBottom:10}}>📦</div><p>No products found</p></div>
+          : <div className="grid">
+              {filtered.map(p => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  approved={retailer?.status === 'approved'}
+                  onClick={() => setSelected(p)}
+                />
+              ))}
+            </div>
         }
       </div>
 
       {selected && (
         <ProductDetail
           product={selected}
-          approved={retailer?.status==='approved'}
+          approved={retailer?.status === 'approved'}
           onClose={() => setSelected(null)}
           onRegister={() => { setSelected(null); setModal('register') }}
         />
