@@ -1,37 +1,117 @@
-const BASE = import.meta.env.VITE_API_URL || 'https://vkfurnishingbackend-production.up.railway.app';
+const API = import.meta.env.VITE_API_URL
 
-async function request(path, options = {}) {
-  const token = localStorage.getItem('vk_admin_token');
-  const headers = { 'Content-Type': 'application/json', ...options.headers };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${BASE}${path}`, { ...options, headers });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Something went wrong');
-  return data;
+async function req(path, options = {}) {
+  const res = await fetch(`${API}${path}`, {
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('vk_admin_token') || ''}`,
+      ...options.headers
+    },
+    ...options
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'Something went wrong')
+  return data
 }
 
-async function upload(path, formData, method='POST') {
-  const token = localStorage.getItem('vk_admin_token');
-  const headers = {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
-  const res = await fetch(`${BASE}${path}`, { method, headers, body: formData });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Upload failed');
-  return data;
+async function reqForm(path, formData, method = 'POST') {
+  const res = await fetch(`${API}${path}`, {
+    method,
+    headers: {
+      'Authorization': `Bearer ${localStorage.getItem('vk_admin_token') || ''}`
+    },
+    body: formData
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'Something went wrong')
+  return data
 }
 
-export const login = (u,p) => request('/api/auth/login',{method:'POST',body:JSON.stringify({username:u,password:p})});
-export const sendOTP = (phone) => request('/api/otp/send',{method:'POST',body:JSON.stringify({phone})});
-export const verifyOTP = (phone,otp) => request('/api/otp/verify',{method:'POST',body:JSON.stringify({phone,otp})});
-export const getProducts = (phone) => request(`/api/products${phone?`?retailer_phone=${phone}`:''}`);
-export const addProduct = (fd) => upload('/api/products',fd);
-export const updateProduct = (id,fd) => upload(`/api/products/${id}`,fd,'PUT');
-export const deleteProduct = (id) => request(`/api/products/${id}`,{method:'DELETE'});
-export const registerRetailer = (data) => request('/api/retailers/register',{method:'POST',body:JSON.stringify(data)});
-export const checkStatus = (phone) => request(`/api/retailers/status/${phone}`);
-export const getRetailers = (status) => request(`/api/retailers${status?`?status=${status}`:''}`);
-export const approveRetailer = (id) => request(`/api/retailers/${id}/approve`,{method:'PUT'});
-export const rejectRetailer = (id) => request(`/api/retailers/${id}/reject`,{method:'PUT'});
-export const placeOrder = (data) => request('/api/orders',{method:'POST',body:JSON.stringify(data)});
-export const getOrders = (status) => request(`/api/orders${status?`?status=${status}`:''}`);
-export const updateOrderStatus = (id,status) => request(`/api/orders/${id}/status`,{method:'PUT',body:JSON.stringify({status})});
+// AUTH
+export async function login(username, password) {
+  return req('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password })
+  })
+}
+
+// OTP
+export async function sendOtp(phone) {
+  return req('/api/otp/send', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone })
+  })
+}
+
+export async function verifyOtp(phone, otp) {
+  return req('/api/otp/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, otp })
+  })
+}
+
+// RETAILERS
+export async function registerRetailer(formData) {
+  return reqForm('/api/retailers/register', formData)
+}
+
+export async function loginRetailer(phone) {
+  return req('/api/retailers/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone })
+  })
+}
+
+export async function getRetailers() {
+  return req('/api/retailers')
+}
+
+export async function approveRetailer(id) {
+  return req(`/api/retailers/${id}/approve`, { method: 'PUT' })
+}
+
+export async function rejectRetailer(id) {
+  return req(`/api/retailers/${id}/reject`, { method: 'PUT' })
+}
+
+// PRODUCTS
+export async function getProducts(retailerPhone) {
+  const query = retailerPhone ? `?retailer_phone=${retailerPhone}` : ''
+  return req(`/api/products${query}`)
+}
+
+export async function addProduct(formData) {
+  return reqForm('/api/products', formData)
+}
+
+export async function updateProduct(id, formData) {
+  return reqForm(`/api/products/${id}`, formData, 'PUT')
+}
+
+export async function deleteProduct(id) {
+  return req(`/api/products/${id}`, { method: 'DELETE' })
+}
+
+// ORDERS
+export async function getOrders() {
+  return req('/api/orders')
+}
+
+export async function placeOrder(orderData) {
+  return req('/api/orders', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(orderData)
+  })
+}
+
+export async function updateOrderStatus(id, status) {
+  return req(`/api/orders/${id}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status })
+  })
+}
