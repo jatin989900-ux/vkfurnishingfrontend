@@ -16,7 +16,6 @@ const S = [
   '.sub-btn:disabled{opacity:0.5;cursor:not-allowed;}',
   '.alert{padding:9px 12px;border-radius:7px;font-size:12px;font-weight:500;margin-bottom:12px;}',
   '.alert-err{background:#FEE;color:#C0392B;border:1px solid #FCC;}',
-  '.alert-ok{background:#E8F5E9;color:#1A6B3C;border:1px solid #C8E6C9;}',
   '.otp-boxes{display:flex;gap:8px;justify-content:center;margin:16px 0;}',
   '.otp-box{width:44px;height:52px;border:1.5px solid #E8E2D8;border-radius:10px;font-size:20px;font-weight:700;text-align:center;outline:none;color:#1C1C2E;}',
   '.otp-box:focus{border-color:#C9973A;}',
@@ -113,9 +112,7 @@ export default function Modal({ type, onClose, onSuccess }) {
       <style>{S}</style>
       <div className="modal">
         <button className="mx" onClick={onClose}>X</button>
-        <h2 style={{ marginBottom: 6 }}>
-          {step === 'login-otp' ? 'Enter OTP' : 'Login to Your Account'}
-        </h2>
+        <h2 style={{ marginBottom: 6 }}>{step === 'login-otp' ? 'Enter OTP' : 'Login'}</h2>
         <p style={{ fontSize: 12, color: '#8888AA', marginBottom: 18 }}>
           {step === 'login-otp' ? 'OTP sent to +91 ' + loginPhone : 'Enter your registered phone number'}
         </p>
@@ -129,7 +126,7 @@ export default function Modal({ type, onClose, onSuccess }) {
                 onKeyDown={e => e.key === 'Enter' && handleLoginSendOtp()} />
             </div>
             <button className="sub-btn dark" onClick={handleLoginSendOtp} disabled={loading}>
-              {loading ? 'Sending OTP...' : 'Send OTP'}
+              {loading ? 'Sending...' : 'Send OTP'}
             </button>
             <div className="switch-link">New retailer? <span onClick={() => onSuccess('register')}>Register here</span></div>
           </>
@@ -145,9 +142,7 @@ export default function Modal({ type, onClose, onSuccess }) {
             <button className="sub-btn dark" onClick={handleLoginVerify} disabled={loading}>
               {loading ? 'Verifying...' : 'Login'}
             </button>
-            <div className="switch-link">
-              <span onClick={() => { setStep(1); setErr('') }}>Change number</span>
-            </div>
+            <div className="switch-link"><span onClick={() => { setStep(1); setErr('') }}>Change number</span></div>
           </>
         )}
       </div>
@@ -159,49 +154,41 @@ export default function Modal({ type, onClose, onSuccess }) {
       <style>{S}</style>
       <div className="modal">
         <button className="mx" onClick={onClose}>X</button>
-
         {step === 1 && (
           <>
             <h2 style={{ marginBottom: 6 }}>Register Your Shop</h2>
-            <p style={{ fontSize: 12, color: '#8888AA', marginBottom: 18 }}>Fill in your details to get wholesale access</p>
+            <p style={{ fontSize: 12, color: '#8888AA', marginBottom: 18 }}>Fill details to get wholesale access</p>
             {err && <div className="alert alert-err">{err}</div>}
             <div className="r2">
-              <div className="fg">
-                <label>Your Name</label>
+              <div className="fg"><label>Your Name</label>
                 <input placeholder="Full name" value={form.name} onChange={e => setF('name', e.target.value)} />
               </div>
-              <div className="fg">
-                <label>Shop Name</label>
+              <div className="fg"><label>Shop Name</label>
                 <input placeholder="Shop name" value={form.shop_name} onChange={e => setF('shop_name', e.target.value)} />
               </div>
             </div>
             <div className="r2">
-              <div className="fg">
-                <label>City</label>
+              <div className="fg"><label>City</label>
                 <input placeholder="City" value={form.city} onChange={e => setF('city', e.target.value)} />
               </div>
-              <div className="fg">
-                <label>Phone Number</label>
-                <input placeholder="10-digit number" value={form.phone} maxLength={10}
+              <div className="fg"><label>Phone</label>
+                <input placeholder="10-digit" value={form.phone} maxLength={10}
                   onChange={e => setF('phone', e.target.value.replace(/\D/g, ''))} />
               </div>
             </div>
-            <div className="fg">
-              <label>GST Number (Optional)</label>
-              <input placeholder="For GST invoicing" value={form.gst} onChange={e => setF('gst', e.target.value)} />
+            <div className="fg"><label>GST (Optional)</label>
+              <input placeholder="GST number" value={form.gst} onChange={e => setF('gst', e.target.value)} />
             </div>
             <div className="fg">
               <label>Business Card / Shop Photo</label>
               <div className="biz-upload" onClick={() => fileRef.current.click()}>
                 {bizPreview
-                  ? <img src={bizPreview} alt="biz card" className="biz-preview" />
-                  : (
-                    <div>
-                      <div style={{ fontSize: 36, marginBottom: 6 }}>📇</div>
-                      <div style={{ fontSize: 13, color: '#3D3D5C', fontWeight: 600 }}>Upload business card or shop photo</div>
-                      <div style={{ fontSize: 11, color: '#8888AA', marginTop: 4 }}>Helps us verify your shop faster</div>
+                  ? <img src={bizPreview} alt="biz" className="biz-preview" />
+                  : <div>
+                      <div style={{ fontSize: 32, marginBottom: 4 }}>📇</div>
+                      <div style={{ fontSize: 13, fontWeight: 600 }}>Upload business card or shop photo</div>
+                      <div style={{ fontSize: 11, color: '#8888AA', marginTop: 4 }}>Helps verify your shop faster</div>
                     </div>
-                  )
                 }
               </div>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleBizCard} />
@@ -216,11 +203,10 @@ export default function Modal({ type, onClose, onSuccess }) {
             <div className="switch-link">Already registered? <span onClick={() => onSuccess('login')}>Login here</span></div>
           </>
         )}
-
         {step === 2 && (
           <>
             <h2 style={{ marginBottom: 6 }}>Verify OTP</h2>
-            <p style={{ fontSize: 12, color: '#8888AA', marginBottom: 18 }}>Enter the 6-digit OTP sent to +91 {form.phone}</p>
+            <p style={{ fontSize: 12, color: '#8888AA', marginBottom: 18 }}>6-digit OTP sent to +91 {form.phone}</p>
             {err && <div className="alert alert-err">{err}</div>}
             <div className="otp-boxes">
               {otp.map((d, i) => (
@@ -232,21 +218,16 @@ export default function Modal({ type, onClose, onSuccess }) {
             <button className="sub-btn gold" onClick={handleVerifyAndRegister} disabled={loading}>
               {loading ? 'Verifying...' : 'Verify and Register'}
             </button>
-            <div className="switch-link">
-              <span onClick={() => { setStep(1); setErr('') }}>Change details</span>
-            </div>
-            <div className="switch-link" style={{ marginTop: 6 }}>
-              <span onClick={handleSendOtp}>Resend OTP</span>
-            </div>
+            <div className="switch-link"><span onClick={() => { setStep(1); setErr('') }}>Change details</span></div>
+            <div className="switch-link" style={{ marginTop: 6 }}><span onClick={handleSendOtp}>Resend OTP</span></div>
           </>
         )}
-
         {step === 3 && (
           <div className="pending-box">
             <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
             <h2 style={{ marginBottom: 8 }}>Registration Submitted!</h2>
             <p style={{ fontSize: 13, color: '#8888AA', lineHeight: 1.6, marginBottom: 16 }}>
-              Your registration is under review. You will get access to wholesale prices once approved by our team. This usually takes a few hours.
+              Your registration is under review. You will get access once approved. Usually takes a few hours.
             </p>
             <button className="sub-btn dark" onClick={onClose}>Close</button>
           </div>
