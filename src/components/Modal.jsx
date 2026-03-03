@@ -21,22 +21,16 @@ const S = `
 .otp-boxes{display:flex;gap:8px;justify-content:center;margin:16px 0;}
 .otp-box{width:44px;height:52px;border:1.5px solid #E8E2D8;border-radius:10px;font-size:20px;font-weight:700;text-align:center;font-family:'DM Sans',sans-serif;outline:none;color:#1C1C2E;}
 .otp-box:focus{border-color:#C9973A;}
-.biz-upload{border:2px dashed #E8E2D8;border-radius:12px;padding:18px;text-align:center;cursor:pointer;margin-bottom:4px;transition:all 0.2s;}
-.biz-upload:hover{border-color:#C9973A;background:#FAF8F4;}
+.biz-upload{border:2px dashed #E8E2D8;border-radius:12px;padding:18px;text-align:center;cursor:pointer;transition:all 0.2s;background:#FAF8F4;}
+.biz-upload:hover{border-color:#C9973A;}
 .biz-preview{width:100%;max-height:160px;object-fit:cover;border-radius:8px;margin-top:8px;}
-.biz-label{font-size:13px;color:#8888AA;margin-top:6px;}
-.biz-sub{font-size:11px;color:#B0B0CC;margin-top:3px;}
 .pending-box{text-align:center;padding:12px 0;}
-.pending-icon{font-size:48px;margin-bottom:12px;}
 .switch-link{text-align:center;margin-top:14px;font-size:13px;color:#8888AA;}
 .switch-link span{color:#C9973A;cursor:pointer;font-weight:600;}
-`
-
-export default function Modal({ type, onClose, onSuccess }) {
+`export default function Modal({ type, onClose, onSuccess }) {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [err, setErr] = useState('')
-  const [ok, setOk] = useState('')
   const [form, setForm] = useState({ name:'', shop_name:'', city:'', phone:'', gst:'' })
   const [otp, setOtp] = useState(['','','','','',''])
   const [bizCard, setBizCard] = useState(null)
@@ -68,15 +62,12 @@ export default function Modal({ type, onClose, onSuccess }) {
     if (e.key === 'Backspace' && !otpArr[i] && i > 0) refs[i-1].current?.focus()
   }
 
-  // REGISTER FLOW
   async function handleSendOtp() {
     if (!form.name || !form.shop_name || !form.city) { setErr('Please fill all fields'); return }
     if (!form.phone || form.phone.length !== 10) { setErr('Enter valid 10-digit phone number'); return }
     setErr(''); setLoading(true)
-    try {
-      await sendOtp(form.phone)
-      setStep(2)
-    } catch(e) { setErr(e.message) }
+    try { await sendOtp(form.phone); setStep(2) }
+    catch(e) { setErr(e.message) }
     setLoading(false)
   }
 
@@ -89,20 +80,17 @@ export default function Modal({ type, onClose, onSuccess }) {
       const fd = new FormData()
       Object.entries(form).forEach(([k,v]) => fd.append(k,v))
       if (bizCard) fd.append('business_card', bizCard)
-      const res = await registerRetailer(fd)
+      await registerRetailer(fd)
       setStep(3)
     } catch(e) { setErr(e.message) }
     setLoading(false)
   }
 
-  // LOGIN FLOW
   async function handleLoginSendOtp() {
     if (!loginPhone || loginPhone.length !== 10) { setErr('Enter valid 10-digit phone number'); return }
     setErr(''); setLoading(true)
-    try {
-      await sendOtp(loginPhone)
-      setStep('login-otp')
-    } catch(e) { setErr(e.message) }
+    try { await sendOtp(loginPhone); setStep('login-otp') }
+    catch(e) { setErr(e.message) }
     setLoading(false)
   }
 
@@ -118,7 +106,6 @@ export default function Modal({ type, onClose, onSuccess }) {
     } catch(e) { setErr(e.message) }
     setLoading(false)
   }
-
   if (type === 'login') return (
     <div className="overlay" onClick={e => e.target.classList.contains('overlay') && onClose()}>
       <style>{S}</style>
@@ -167,10 +154,9 @@ export default function Modal({ type, onClose, onSuccess }) {
       <style>{S}</style>
       <div className="modal">
         <button className="mx" onClick={onClose}>✕</button>
-
         {step === 1 && <>
           <h2 style={{fontFamily:"'Playfair Display',serif",marginBottom:6}}>Register Your Shop</h2>
-          <p style={{fontSize:12,color:'#8888AA',marginBottom:18}}>Fill in your details to get started</p>
+          <p style={{fontSize:12,color:'#8888AA',marginBottom:18}}>Fill in your details to get wholesale access</p>
           {err && <div className="alert alert-err">{err}</div>}
           <div className="r2">
             <div className="fg"><label>Your Name *</label>
@@ -184,24 +170,23 @@ export default function Modal({ type, onClose, onSuccess }) {
             <div className="fg"><label>City *</label>
               <input placeholder="City" value={form.city} onChange={e => setF('city',e.target.value)} />
             </div>
-            <div className="fg"><label>GST Number</label>
-              <input placeholder="Optional" value={form.gst} onChange={e => setF('gst',e.target.value)} />
+            <div className="fg"><label>Phone Number *</label>
+              <input placeholder="10-digit number" value={form.phone} maxLength={10}
+                onChange={e => setF('phone', e.target.value.replace(/\D/g,''))} />
             </div>
           </div>
-          <div className="fg"><label>Phone Number *</label>
-            <input placeholder="10-digit mobile number" value={form.phone} maxLength={10}
-              onChange={e => setF('phone', e.target.value.replace(/\D/g,''))} />
+          <div className="fg"><label>GST Number (Optional)</label>
+            <input placeholder="For GST invoicing" value={form.gst} onChange={e => setF('gst',e.target.value)} />
           </div>
-
           <div className="fg">
-            <label>Business Card / Shop Photo</label>
+            <label>Business Card / Shop Photo 📇</label>
             <div className="biz-upload" onClick={() => fileRef.current.click()}>
               {bizPreview
                 ? <img src={bizPreview} alt="Business card" className="biz-preview" />
                 : <>
-                    <div style={{fontSize:32,marginBottom:6}}>📇</div>
-                    <div className="biz-label">Upload business card or shop photo</div>
-                    <div className="biz-sub">Helps us verify faster · JPG or PNG</div>
+                    <div style={{fontSize:36,marginBottom:6}}>📇</div>
+                    <div style={{fontSize:13,color:'#3D3D5C',fontWeight:600}}>Upload business card or shop photo</div>
+                    <div style={{fontSize:11,color:'#8888AA',marginTop:4}}>Helps us verify your shop faster</div>
                   </>
               }
             </div>
@@ -211,7 +196,6 @@ export default function Modal({ type, onClose, onSuccess }) {
                 onClick={() => { setBizCard(null); setBizPreview('') }}>Remove photo</button>
             )}
           </div>
-
           <button className="sub-btn gold" onClick={handleSendOtp} disabled={loading}>
             {loading ? 'Sending OTP...' : 'Send OTP to Verify →'}
           </button>
@@ -233,14 +217,12 @@ export default function Modal({ type, onClose, onSuccess }) {
             {loading ? 'Verifying...' : 'Verify & Register →'}
           </button>
           <div className="switch-link"><span onClick={() => { setStep(1); setErr('') }}>← Change details</span></div>
-          <div className="switch-link" style={{marginTop:6}}>
-            <span onClick={handleSendOtp}>Resend OTP</span>
-          </div>
+          <div className="switch-link" style={{marginTop:6}}><span onClick={handleSendOtp}>Resend OTP</span></div>
         </>}
 
         {step === 3 && <>
           <div className="pending-box">
-            <div className="pending-icon">🎉</div>
+            <div style={{fontSize:48,marginBottom:12}}>🎉</div>
             <h2 style={{fontFamily:"'Playfair Display',serif",marginBottom:8}}>Registration Submitted!</h2>
             <p style={{fontSize:13,color:'#8888AA',lineHeight:1.6,marginBottom:16}}>
               Your registration is under review. You will get access to wholesale prices once approved by our team. This usually takes a few hours.
