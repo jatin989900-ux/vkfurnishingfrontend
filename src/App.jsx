@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { CartProvider } from './cart.js'
+import { CartProvider } from './cart.jsx'
 import Nav from './components/Nav.jsx'
 import Home from './pages/Home.jsx'
 import Catalogue from './pages/Catalogue.jsx'
