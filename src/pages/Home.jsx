@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { getProducts } from '../api.js'
 import ProductCard from '../components/ProductCard.jsx'
+import ProductDetail from '../components/ProductDetail.jsx'
 import Modal from '../components/Modal.jsx'
 
 const S = `
@@ -27,6 +28,7 @@ const S = `
 export default function Home({ retailer, onLogin }) {
   const [products, setProducts] = useState([])
   const [modal, setModal] = useState(null)
+  const [selected, setSelected] = useState(null)
   const location = useLocation()
 
   useEffect(() => {
@@ -64,15 +66,14 @@ export default function Home({ retailer, onLogin }) {
       <div className="section">
         <div className="section-hd">
           <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:28,marginBottom:8}}>Our Product Range</h2>
-          <p style={{fontSize:14,color:'#8888AA'}}>Register your shop to see wholesale prices</p>
+          <p style={{fontSize:14,color:'#8888AA'}}>Tap any product to view details & images</p>
         </div>
         {products.length === 0
           ? <div className="loading-screen"><div className="spinner"></div><p>Loading products...</p></div>
           : <div className="grid">
               {products.slice(0,6).map(p => (
                 <ProductCard key={p.id} product={p} approved={retailer?.status==='approved'}
-                  onEnquire={() => setModal({type:'order',product:p})}
-                  onRegister={() => setModal('register')} />
+                  onClick={() => setSelected(p)} />
               ))}
             </div>
         }
@@ -82,9 +83,17 @@ export default function Home({ retailer, onLogin }) {
           </div>
         )}
       </div>
+
+      {selected && (
+        <ProductDetail
+          product={selected}
+          approved={retailer?.status==='approved'}
+          onClose={() => setSelected(null)}
+          onRegister={() => { setSelected(null); setModal('register') }}
+        />
+      )}
       {modal === 'register' && <Modal type="register" onClose={() => setModal(null)} onSuccess={handleSuccess} />}
       {modal === 'login' && <Modal type="login" onClose={() => setModal(null)} onSuccess={handleSuccess} />}
-      {modal?.type === 'order' && <Modal type="order" product={modal.product} onClose={() => setModal(null)} onSuccess={() => setModal(null)} />}
     </>
   )
 }
