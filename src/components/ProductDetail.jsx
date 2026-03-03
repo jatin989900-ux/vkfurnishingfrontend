@@ -213,3 +213,5 @@ export default function ProductDetail({ product: p, approved, onClose, onRegiste
         </div>
       </div>
     </div>
+)
+}
