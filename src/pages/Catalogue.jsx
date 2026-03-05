@@ -5,21 +5,24 @@ import ProductDetail from '../components/ProductDetail.jsx'
 import Modal from '../components/Modal.jsx'
 
 const S = [
-  '.cat-page{max-width:1080px;margin:0 auto;padding:24px 16px;}',
+  '.cat-page{max-width:1080px;margin:0 auto;padding:24px 14px 40px;}',
   '.cat-hd{margin-bottom:20px;}',
-  '.cat-hd h2{font-size:24px;font-weight:700;margin-bottom:4px;}',
-  '.cat-hd p{font-size:13px;color:#8888AA;}',
+  '.cat-hd h2{font-family:"Cormorant Garamond",serif;font-size:26px;font-weight:700;color:#1C1C2E;margin:0 0 4px;}',
+  '.cat-hd p{font-size:13px;color:#aaa;margin:0;}',
+  '.search-box{width:100%;padding:12px 16px;border:1.5px solid #EDE9E0;border-radius:10px;font-size:14px;background:#fff;color:#1C1C2E;outline:none;margin-bottom:16px;font-family:"DM Sans",sans-serif;transition:border 0.2s;}',
+  '.search-box:focus{border-color:#C9973A;box-shadow:0 0 0 3px rgba(201,151,58,0.1);}',
   '.filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:20px;scrollbar-width:none;}',
   '.filters::-webkit-scrollbar{display:none;}',
-  '.filter-btn{padding:7px 14px;border-radius:20px;border:1.5px solid #E8E2D8;background:#fff;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;color:#3D3D5C;}',
+  '.filter-btn{padding:8px 16px;border:1.5px solid #EDE9E0;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:#666;white-space:nowrap;transition:all 0.18s;font-family:"DM Sans",sans-serif;letter-spacing:0.2px;}',
+  '.filter-btn:hover{border-color:#C9973A;color:#C9973A;}',
   '.filter-btn.active{background:#1C1C2E;color:#fff;border-color:#1C1C2E;}',
-  '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}',
-  '.empty{text-align:center;padding:60px 20px;color:#8888AA;}',
-  '.search-box{width:100%;padding:11px 14px;border:1.5px solid #E8E2D8;border-radius:10px;font-size:14px;outline:none;margin-bottom:14px;box-sizing:border-box;}',
-  '.search-box:focus{border-color:#C9973A;}',
+  '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px;}',
+  '.empty{text-align:center;padding:60px 20px;color:#bbb;}',
+  '.empty div{font-size:40px;margin-bottom:10px;}',
+  '.empty p{font-size:14px;margin:0;font-style:italic;}',
 ].join('')
 
-const CATS = ['All','Bedsheets','Dohars','Comforters','Blankets','Towels','Quilts','Bathrobes','Bedcovers','Top Sheets','Other']
+const CATS = ['All','Bedsheets','Dohars','Comforters','Blankets','Towels','Quilts','Bathrobes','Bedcovers','Top Sheets']
 
 export default function Catalogue({ retailer, onLogin }) {
   const [products, setProducts] = useState([])
@@ -65,7 +68,7 @@ export default function Catalogue({ retailer, onLogin }) {
           ))}
         </div>
         {filtered.length === 0
-          ? <div className="empty"><div style={{fontSize:40,marginBottom:10}}>📦</div><p>No products found</p></div>
+          ? <div className="empty"><div>🛏</div><p>No products found</p></div>
           : <div className="grid">
               {filtered.map(p => (
                 <ProductCard
