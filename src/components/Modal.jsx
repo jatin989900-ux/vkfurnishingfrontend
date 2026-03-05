@@ -2,7 +2,7 @@ import { useState, useRef } from 'react'
 import { sendOtp, verifyOtp, registerRetailer, loginRetailer } from '../api.js'
 
 const S = [
-  '.overlay{position:fixed;inset:0;background:rgba(28,28,46,0.7);backdrop-filter:blur(5px);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}',
+  '.overlay{position:fixed;inset:0;background:rgba(28,28,46,0.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;overflow-y:auto;}',
   '.modal{background:#fff;border-radius:18px;padding:28px;max-width:420px;width:100%;position:relative;max-height:92vh;overflow-y:auto;}',
   '.mx{position:absolute;top:16px;right:16px;background:#F2EDE4;border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:13px;}',
   '.fg{margin-bottom:13px;}',
@@ -55,11 +55,11 @@ export default function Modal({ type, onClose, onSuccess }) {
     const next = [...otpArr]
     next[i] = val.slice(-1)
     setOtpArr(next)
-    if (val && i < 5) refs[i + 1].current?.focus()
+    if (val && i < 5) refs[i + 1].current && refs[i + 1].current.focus()
   }
 
   function handleOtpKey(e, i, refs, otpArr, setOtpArr) {
-    if (e.key === 'Backspace' && !otpArr[i] && i > 0) refs[i - 1].current?.focus()
+    if (e.key === 'Backspace' && !otpArr[i] && i > 0) refs[i - 1].current && refs[i - 1].current.focus()
   }
 
   async function handleSendOtp() {
@@ -180,12 +180,11 @@ export default function Modal({ type, onClose, onSuccess }) {
               <input placeholder="GST number" value={form.gst} onChange={e => setF('gst', e.target.value)} />
             </div>
             <div className="fg">
-              <label>Business Card / Shop Photo</label>
+              <label>Business Card or Shop Photo</label>
               <div className="biz-upload" onClick={() => fileRef.current.click()}>
                 {bizPreview
                   ? <img src={bizPreview} alt="biz" className="biz-preview" />
                   : <div>
-                      <div style={{ fontSize: 32, marginBottom: 4 }}>📇</div>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>Upload business card or shop photo</div>
                       <div style={{ fontSize: 11, color: '#8888AA', marginTop: 4 }}>Helps verify your shop faster</div>
                     </div>
@@ -224,7 +223,6 @@ export default function Modal({ type, onClose, onSuccess }) {
         )}
         {step === 3 && (
           <div className="pending-box">
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
             <h2 style={{ marginBottom: 8 }}>Registration Submitted!</h2>
             <p style={{ fontSize: 13, color: '#8888AA', lineHeight: 1.6, marginBottom: 16 }}>
               Your registration is under review. You will get access once approved. Usually takes a few hours.
