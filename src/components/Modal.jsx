@@ -233,4 +233,4 @@ export default function Modal({ type, onClose, onSuccess }) {
       </div>
     </div>
   )
-}
+} 
