@@ -80,7 +80,7 @@ export async function rejectRetailer(id) {
 // PRODUCTS
 export async function getProducts(retailerPhone) {
   const query = retailerPhone ? `?retailer_phone=${retailerPhone}` : ''
-  return req(`/api/products${query}`)
+return req(`/api/products${query}`)
 }
 
 export async function addProduct(formData) {
