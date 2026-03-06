@@ -1,19 +1,5 @@
-import { useState, useEffect } from 'react'
-import { initializeApp, getApps } from 'firebase/app'
-import { getAuth, RecaptchaVerifier, signInWithPhoneNumber } from 'firebase/auth'
+import { useState } from 'react'
 import { registerRetailer, loginRetailer } from '../api.js'
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDtLWIz_0QaqPJto9fj_ooDXUp0BrqsZ9U",
-  authDomain: "vkf-delhi.firebaseapp.com",
-  projectId: "vkf-delhi",
-  storageBucket: "vkf-delhi.firebasestorage.app",
-  messagingSenderId: "664754953899",
-  appId: "1:664754953899:web:3f28be1a8cd7c575a2a1ee"
-}
-
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
-const auth = getAuth(app)
 
 const S = [
   '.overlay{position:fixed;inset:0;background:rgba(28,28,46,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}',
@@ -31,104 +17,67 @@ const S = [
   '.btn-primary:hover{background:#B8862F;}',
   '.btn-primary:disabled{background:#ddd;cursor:not-allowed;}',
   '.error{background:#FFF0F0;color:#E53E3E;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;border:1px solid #FED7D7;}',
-  '.otp-sent{text-align:center;font-size:13px;color:#276749;font-weight:600;margin-bottom:14px;padding:10px;background:#F0FFF4;border-radius:8px;}',
   '.switch-link{text-align:center;margin-top:18px;font-size:13px;color:#aaa;}',
   '.switch-link button{background:none;border:none;color:#C9973A;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit;}',
   '.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;}',
   '.pending-note{text-align:center;padding:8px 0;}',
-  '.pending-note p{margin:0 0 8px;font-size:13px;color:#8B6914;line-height:1.6;}',
+  '.pending-note p{margin:0 0 10px;font-size:13px;color:#8B6914;line-height:1.6;}',
 ].join('')
 
 export default function Modal({ type, onClose, onSuccess }) {
-  const [step, setStep] = useState('form')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [confirmResult, setConfirmResult] = useState(null)
+  const [step, setStep] = useState('form')
+
+  // Register fields
   const [name, setName] = useState('')
   const [shopName, setShopName] = useState('')
   const [city, setCity] = useState('')
   const [phone, setPhone] = useState('')
   const [gst, setGst] = useState('')
   const [bizCard, setBizCard] = useState(null)
-  const [otp, setOtp] = useState('')
 
-  useEffect(() => {
-    return () => {
-      if (window.recaptchaVerifier) {
-        try { window.recaptchaVerifier.clear() } catch (e) {}
-        window.recaptchaVerifier = null
-      }
+  async function handleRegister() {
+    setError('')
+    if (!name || !shopName || !city || !phone) {
+      setError('Please fill all required fields')
+      return
     }
-  }, [])
+    if (phone.length !== 10) {
+      setError('Please enter a valid 10-digit phone number')
+      return
+    }
+    setLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('name', name)
+      formData.append('shop_name', shopName)
+      formData.append('city', city)
+      formData.append('phone', phone)
+      if (gst) formData.append('gst', gst)
+      if (bizCard) formData.append('business_card', bizCard)
+      const data = await registerRetailer(formData)
+      if (data.retailer) {
+        setStep('pending')
+      }
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.')
+    }
+    setLoading(false)
+  }
 
-  async function sendOtp() {
+  async function handleLogin() {
     setError('')
     if (!phone || phone.length !== 10) {
       setError('Please enter a valid 10-digit phone number')
       return
     }
-    if (type === 'register' && (!name || !shopName || !city)) {
-      setError('Please fill all required fields')
-      return
-    }
     setLoading(true)
     try {
-      if (!window.recaptchaVerifier) {
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-          size: 'invisible',
-          callback: () => {}
-        })
-      }
-      const result = await signInWithPhoneNumber(auth, '+91' + phone, window.recaptchaVerifier)
-      setConfirmResult(result)
-      setStep('otp')
+      const data = await loginRetailer(phone)
+      onSuccess(data.retailer)
     } catch (err) {
-      console.error(err)
-      setError('Error: ' + err.code + ' ' + err.message)
-      if (window.recaptchaVerifier) {
-        try { window.recaptchaVerifier.clear() } catch (e) {}
-        window.recaptchaVerifier = null
-      }
-    }
-    setLoading(false)
-  }
-
-  async function verifyOtp() {
-    if (!otp || otp.length !== 6) {
-      setError('Please enter the complete 6-digit OTP')
-      return
-    }
-    setError('')
-    setLoading(true)
-    try {
-      await confirmResult.confirm(otp)
-      if (type === 'register') {
-        const formData = new FormData()
-        formData.append('name', name)
-        formData.append('shop_name', shopName)
-        formData.append('city', city)
-        formData.append('phone', phone)
-        if (gst) formData.append('gst', gst)
-        if (bizCard) formData.append('business_card', bizCard)
-        const data = await registerRetailer(formData)
-        if (data.retailer?.status === 'pending') {
-          setStep('pending')
-        } else {
-          onSuccess(data.retailer)
-        }
-      } else {
-        const data = await loginRetailer(phone)
-        onSuccess(data.retailer)
-      }
-    } catch (err) {
-      console.error(err)
-      if (err.code === 'auth/invalid-verification-code') {
-        setError('Invalid OTP. Please check and try again.')
-      } else if (err.message?.includes('already registered')) {
-        setError('This number is already registered. Please login instead.')
-      } else {
-        setError(err.message || 'Verification failed. Please try again.')
-      }
+      setError(err.message || 'Login failed. Please try again.')
     }
     setLoading(false)
   }
@@ -136,7 +85,6 @@ export default function Modal({ type, onClose, onSuccess }) {
   return (
     <div className="overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <style>{S}</style>
-      <div id="recaptcha-container"></div>
       <div className="modal">
         <button className="modal-close" onClick={onClose}>✕</button>
 
@@ -180,27 +128,11 @@ export default function Modal({ type, onClose, onSuccess }) {
                   </label>
                   <p style={{fontSize:11,color:'#aaa',margin:'4px 0 0'}}>Helps verify your shop faster</p>
                 </div>
-                <button className="btn-primary" onClick={sendOtp} disabled={loading}>
-                  {loading ? 'Sending OTP...' : 'Send OTP to Verify'}
+                <button className="btn-primary" onClick={handleRegister} disabled={loading}>
+                  {loading ? 'Submitting...' : 'Register Your Shop'}
                 </button>
                 <div className="switch-link">
                   Already registered? <button onClick={() => onSuccess('login')}>Login here</button>
-                </div>
-              </>
-            )}
-
-            {step === 'otp' && (
-              <>
-                <div className="otp-sent">✅ OTP sent to +91 {phone}</div>
-                <div className="field">
-                  <label>Enter OTP</label>
-                  <input type="tel" value={otp} onChange={e => setOtp(e.target.value)} placeholder="6-digit OTP" maxLength={6} autoFocus />
-                </div>
-                <button className="btn-primary" onClick={verifyOtp} disabled={loading}>
-                  {loading ? 'Verifying...' : 'Verify & Register'}
-                </button>
-                <div className="switch-link">
-                  <button onClick={() => { setStep('form'); setOtp(''); setError('') }}>← Change details</button>
                 </div>
               </>
             )}
@@ -219,37 +151,16 @@ export default function Modal({ type, onClose, onSuccess }) {
             <h2>Welcome Back</h2>
             <p className="modal-sub">Login with your registered phone number</p>
             {error && <div className="error">{error}</div>}
-
-            {step === 'form' && (
-              <>
-                <div className="field">
-                  <label>Phone Number *</label>
-                  <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="10-digit number" maxLength={10} autoFocus />
-                </div>
-                <button className="btn-primary" onClick={sendOtp} disabled={loading}>
-                  {loading ? 'Sending OTP...' : 'Send OTP'}
-                </button>
-                <div className="switch-link">
-                  New retailer? <button onClick={() => onSuccess('register')}>Register here</button>
-                </div>
-              </>
-            )}
-
-            {step === 'otp' && (
-              <>
-                <div className="otp-sent">✅ OTP sent to +91 {phone}</div>
-                <div className="field">
-                  <label>Enter OTP</label>
-                  <input type="tel" value={otp} onChange={e => setOtp(e.target.value)} placeholder="6-digit OTP" maxLength={6} autoFocus />
-                </div>
-                <button className="btn-primary" onClick={verifyOtp} disabled={loading}>
-                  {loading ? 'Verifying...' : 'Login'}
-                </button>
-                <div className="switch-link">
-                  <button onClick={() => { setStep('form'); setOtp(''); setError('') }}>← Change number</button>
-                </div>
-              </>
-            )}
+            <div className="field">
+              <label>Phone Number *</label>
+              <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="10-digit number" maxLength={10} autoFocus />
+            </div>
+            <button className="btn-primary" onClick={handleLogin} disabled={loading}>
+              {loading ? 'Logging in...' : 'Login'}
+            </button>
+            <div className="switch-link">
+              New retailer? <button onClick={() => onSuccess('register')}>Register here</button>
+            </div>
           </>
         )}
       </div>
