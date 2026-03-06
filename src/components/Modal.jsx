@@ -84,7 +84,7 @@ export default function Modal({ type, onClose, onSuccess }) {
       setStep('otp')
     } catch (err) {
       console.error(err)
-      setError('Failed to send OTP. Please try again.')
+      setError('Error: ' + err.code + ' ' + err.message)
       if (window.recaptchaVerifier) {
         try { window.recaptchaVerifier.clear() } catch (e) {}
         window.recaptchaVerifier = null
