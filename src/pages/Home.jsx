@@ -41,10 +41,13 @@ export default function Home({ retailer, onLogin }) {
   const [products, setProducts] = useState([])
   const [modal, setModal] = useState(null)
   const [selected, setSelected] = useState(null)
-
-  useEffect(() => {
-    getProducts(retailer?.phone).then(r => setProducts(r.products || [])).catch(console.error)
-  }, [retailer])
+useEffect(() => {
+    getProducts(retailer?.phone)
+      .then(r => setProducts(r.products || []))
+      .catch(() => {
+        getProducts().then(r => setProducts(r.products || []))
+      })
+}, [retailer])
 
   function handleSuccess(data) {
     if (data === 'login') { setModal('login'); return }
