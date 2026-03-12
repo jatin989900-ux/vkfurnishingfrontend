@@ -63,7 +63,7 @@ useEffect(() => {
       <div className="hero">
         <div className="hero-badge">Verified Retailers Only · Wholesale Pricing</div>
         <h1>India's Trusted<br /><span>Wholesale Bedding</span></h1>
-        <p>200+ designs across bedsheets, dohars, blankets and more. Same-day dispatch pan-India.</p>
+        <p>2000+ designs across bedsheets, dohars, blankets and more. Same-day dispatch pan-India.</p>
         <div className="hero-btns">
           <button className="btn-gold" onClick={() => setModal('register')}>Register Your Shop</button>
           <Link to="/catalogue" className="btn-outline">Browse Catalogue</Link>
@@ -71,7 +71,7 @@ useEffect(() => {
       </div>
 
       <div className="stats">
-        {[['200+','Designs'],[String(products.length),'Products'],['Same Day','Dispatch'],['Pan India','Delivery']].map(([n,l]) => (
+        {[['2000+','Designs'],['500+','Products'],['Same Day','Dispatch'],['Pan India','Delivery']].map(([n,l]) => (
           <div key={l} className="stat">
             <span className="stat-n">{n}</span>
             <span className="stat-l">{l}</span>
@@ -99,7 +99,7 @@ useEffect(() => {
         }
         {products.length > 6 && (
           <div className="view-all-wrap">
-            <Link to="/catalogue" className="btn-dark">View All {products.length} Products</Link>
+            <Link to="/catalogue" className="btn-dark">View All Products</Link>
           </div>
         )}
       </div>
